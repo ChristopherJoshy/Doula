@@ -1,103 +1,73 @@
-# Prompt Opinion - FHIR MCP Server (TypeScript)
+<div align="center">
+  <img width="100%" src="https://capsule-render.vercel.app/api?type=waving&color=0:3b0764,35:7e22ce,70:c026d3,100:f0abfc&height=190&section=header&text=Doula&fontSize=68&fontColor=ffffff&animation=twinkling&fontAlignY=36&desc=Maternal%20health%20tools%20over%20FHIR%20and%20MCP.&descAlignY=58&descSize=17" alt="Doula animated header" />
 
-This project is a high-performance, professionally structured MCP server for the Prompt Opinion platform. It is built with TypeScript and integrates with FHIR servers to deliver reliable, extensible clinical tooling.
+  <p>
+    <img src="https://img.shields.io/badge/TypeScript-ESM-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
+    <img src="https://img.shields.io/badge/MCP-Streamable%20HTTP-7E22CE?style=for-the-badge" alt="MCP server" />
+    <img src="https://img.shields.io/badge/Clinical%20data-FHIR-C026D3?style=for-the-badge" alt="FHIR" />
+    <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-F0ABFC?style=for-the-badge" alt="MIT License" /></a>
+  </p>
+</div>
 
-The refactored architecture emphasizes performance and maintainability through session pooling, backend connection pooling, decoupled layers, and strong type safety.
+## 🤰 What it is
 
-## Features
+Doula is a TypeScript Model Context Protocol server that connects MCP clients to FHIR-backed maternal-health context and a set of domain tools. It exposes structured tools through an HTTP server rather than asking a language model to invent its own data access.
 
-- **Decoupled Architecture**: Layered design across Server, FHIR, Core, and Tools.
-- **High Performance**: Singleton `McpServer`, session pooling, and HTTP keep-alive for backend connections.
-- **Type-Safe Tools**: Abstract base class for implementing tools independent of transport concerns.
-- **Structured Logging**: Pino-based request and application logging.
-- **Graceful Shutdown**: Process signal handling for clean shutdown behavior.
-- **ESM & Modern TypeScript**: ECMAScript modules with strict TypeScript.
+## 🔌 Request path
 
-## Project Structure
-
-```text
-src/
-├─ server/
-├─ fhir/
-├─ core/
-├─ tools/
-├─ config/
-└─ types/
+```mermaid
+flowchart LR
+  A[MCP client] --> B[Express transport]
+  B --> C[MCP server and tool registry]
+  C --> D[Domain tools]
+  D --> E[FHIR client]
+  E --> F[FHIR endpoint]
+  D --> G[Validation and response]
 ```
 
-- `src/server`: Express app, `McpServer` lifecycle, and session pooling.
-- `src/fhir`: FHIR client, utilities, and FHIR context management.
-- `src/core`: Shared error types, logging, and request context.
-- `src/tools`: Base tool class, tool implementations, and registry.
-- `src/config`: Application constants.
-- `src/types`: Shared type definitions.
+## 🧰 Stack
 
-## Getting Started
+| Area | Tools |
+|---|---|
+| Runtime | Node.js 20+, TypeScript, ESM |
+| Protocol and transport | `@modelcontextprotocol/sdk`, Express, Streamable HTTP |
+| Clinical interface | FHIR client via `@smile-cdr/fhirts` |
+| Validation and logging | Zod, Pino |
+| Tests | Vitest |
 
-### Prerequisites
-
-- Node.js >= 20.0.0
-
-### Installation
+## 🚀 Run locally
 
 ```bash
-npm install
-```
-
-### Configuration
-
-Create a `.env` file from `.env.example` and configure:
-
-- `PORT`
-- `LOG_LEVEL`
-
-### Running the Server
-
-Development (hot reload):
-
-```bash
+git clone https://github.com/ChristopherJoshy/doula.git
+cd doula
+npm ci
+cp .env.example .env
 npm run dev
 ```
 
-Production (after building):
+In PowerShell, use `Copy-Item .env.example .env`. Configure `PORT`, `LOG_LEVEL`, and the FHIR connection/auth context expected by the server. The development server uses `tsx`; production output is built with TypeScript.
 
 ```bash
-npm run start
+npm test
+npm run typecheck
+npm run build
 ```
 
-## Available Scripts
+## 🗂️ Layout
 
-- `dev`: Run in development mode with hot reload.
-- `start`: Run the built server in production mode.
-- `build`: Compile TypeScript output.
-- `test`: Run tests.
-- `lint`: Run lint checks.
-- `format`: Format source files.
-- `typecheck`: Run TypeScript type checking.
+```text
+src/server/   MCP transport and lifecycle
+src/fhir/     FHIR client and context
+src/tools/    tool implementations and registry
+src/core/     errors, logging and request context
+data/         local fixtures and reference data
+tests/        Vitest suite
+```
 
-## API Usage
+## 📄 License
 
-### `POST /mcp`
+MIT. See [`LICENSE`](LICENSE).
 
-Main MCP endpoint using Streamable HTTP transport.
+## ⚠️ Clinical-data boundary
 
-Pass FHIR context using request headers:
-
-- `x-fhir-server-url`
-- `x-fhir-access-token`
-- `x-patient-id`
-
-### `GET /health`
-
-Health check endpoint.
-
-## Extending the Server
-
-To add a new tool:
-
-1. Create a new file in `src/tools/` (for example, `src/tools/my-new.tool.ts`).
-2. Create a class that extends `McpTool`.
-3. Implement `name`, `description`, `inputSchema`, and `handle`.
-4. Add the tool class to the array in `src/tools/registry.ts`.
-
-After restarting the server, the new tool will be registered automatically.
+This is a prototype integration, not clinical advice or a production EHR. Use synthetic fixtures for development. Any real deployment needs authorization, privacy review, clinical validation, and access-control testing appropriate to its FHIR environment.
