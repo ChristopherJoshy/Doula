@@ -38,7 +38,7 @@ flowchart LR
 ## 🚀 Run locally
 
 ```bash
-git clone https://github.com/ChristopherJoshy/doula.git
+git clone https://github.com/ChristopherJoshy/Doula.git
 cd doula
 npm ci
 cp .env.example .env
